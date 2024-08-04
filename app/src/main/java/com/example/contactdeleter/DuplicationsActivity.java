@@ -2,6 +2,7 @@ package com.example.contactdeleter;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -19,22 +20,32 @@ public class DuplicationsActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.listViewDuplications);
 
         Intent intent = getIntent();
-        String type = intent.getStringExtra("type");
-        ArrayList<String> duplicatedItems = intent.getStringArrayListExtra("list");
+        ArrayList<Contact> contacts = getIntent().getParcelableArrayListExtra("contacts");
+        Log.e("err", String.valueOf(contacts));
 
-        if (duplicatedItems == null) {
-            duplicatedItems = new ArrayList<>();
-        }
+        ContactsAdapter contactsAdapter = new ContactsAdapter(this, contacts);
+        listView.setAdapter(contactsAdapter);
 
-        String title = "Duplications: ";
-        if ("name".equals(type)) {
-            title += "Names";
-        } else if ("phone".equals(type)) {
-            title += "Numbers";
-        }
-        setTitle(title);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, duplicatedItems);
-        listView.setAdapter(adapter);
     }
+
+//        if (duplicatedItems == null) {
+//            duplicatedItems = new ArrayList<>();
+//        }
+//
+//        String title = "Duplications: ";
+//        if ("name".equals(type)) {
+//            title += "Names";
+//        } else if ("phone".equals(type)) {
+//            title += "Numbers";
+//        }
+//        setTitle(title);
+//
+//        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, duplicatedItems);
+//        listView.setAdapter(adapter);
+//    }
+
+
+
 }
+
+

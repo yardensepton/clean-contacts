@@ -340,47 +340,32 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Intent intent = new Intent(MainActivity.this, DuplicationsActivity.class);
                 intent.putExtra("type", type);
-                intent.putExtra("list", getDuplicatedList(contentResolver, type));
+                intent.putParcelableArrayListExtra("contacts", getDuplicatedList(contentResolver, type));
                 startActivity(intent);
             }
         });
     }
 
-    private ArrayList<String> getDuplicatedList(ContentResolver contentResolver, String type) {
-        ArrayList<String> duplicatedItems = new ArrayList<>();
-        Cursor cursor = null;
+    private ArrayList<Contact> getDuplicatedList(ContentResolver contentResolver, String type) {
+        ArrayList<Contact> duplicatedContacts = new ArrayList<>();
         if ("name".equals(type)) {
-            cursor = ContactHelper.getDuplicatedContactsByNameCursor(contentResolver, null);
+            duplicatedContacts = ContactHelper.getDuplicatedContactsByName(contentResolver, null);
         } else if ("phone".equals(type)) {
-            cursor = ContactHelper.getDuplicatedContactsByPhoneNumberCursor(contentResolver);
+            duplicatedContacts = ContactHelper.getDuplicatedContactsByPhoneNumber(contentResolver);
         }
 
-        if (cursor != null) {
-            int index = "name".equals(type) ?
-                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME) :
-                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            while (cursor.moveToNext()) {
-                duplicatedItems.add(cursor.getString(index));
-            }
-            cursor.close();
-        }
-        return duplicatedItems;
+        return duplicatedContacts;
     }
 
     private int getDuplicatedCount(ContentResolver contentResolver, String type) {
-        Cursor cursor = null;
+        ArrayList<Contact> duplicatedContacts = new ArrayList<>();
         if ("name".equals(type)) {
-            cursor = ContactHelper.getDuplicatedContactsByNameCursor(contentResolver, null);
+            duplicatedContacts = ContactHelper.getDuplicatedContactsByName(contentResolver, null);
         } else if ("phone".equals(type)) {
-            cursor = ContactHelper.getDuplicatedContactsByPhoneNumberCursor(contentResolver);
+            duplicatedContacts = ContactHelper.getDuplicatedContactsByPhoneNumber(contentResolver);
         }
 
-        int count = 0;
-        if (cursor != null) {
-            count = cursor.getCount();
-            cursor.close();
-        }
-        return count/2;
+        return duplicatedContacts.size()/2;
     }
 
     @Override

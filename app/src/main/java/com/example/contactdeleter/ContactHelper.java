@@ -17,6 +17,65 @@ import java.util.List;
 import java.util.Objects;
 
 public class ContactHelper {
+
+
+    public static ArrayList<Contact> getDuplicatedContactsByName(ContentResolver contentResolver, String startsWith) {
+        HashMap<String, List<String>> nameToIdsMap = collectIdsForNames(contentResolver, startsWith);
+        List<String> duplicateIds = filterDuplicateIds(nameToIdsMap);
+
+        if (duplicateIds.isEmpty()) {
+            return new ArrayList<>(); // No duplicates found
+        }
+
+        return queryDuplicatedContacts(contentResolver, duplicateIds);
+    }
+
+    public static ArrayList<Contact> getDuplicatedContactsByPhoneNumber(ContentResolver contentResolver) {
+        HashMap<String, List<String>> numberToIdsMap = collectIdsForPhoneNumbers(contentResolver, null);
+        List<String> duplicateNumberIds = filterDuplicateIds(numberToIdsMap);
+
+        if (duplicateNumberIds.isEmpty()) {
+            return new ArrayList<>(); // No duplicates found
+        }
+
+        return queryDuplicatedContacts(contentResolver, duplicateNumberIds);
+    }
+
+    private static ArrayList<Contact> queryDuplicatedContacts(ContentResolver contentResolver, List<String> ids) {
+        String selection = ContactsContract.CommonDataKinds.Phone._ID + " IN (" +
+                TextUtils.join(",", Collections.nCopies(ids.size(), "?")) + ")";
+        String[] selectionArgs = ids.toArray(new String[0]);
+
+        Cursor cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{
+                        ContactsContract.CommonDataKinds.Phone._ID,
+                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                        ContactsContract.CommonDataKinds.Phone.NUMBER
+                },
+                selection,
+                selectionArgs,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
+        );
+
+        ArrayList<Contact> duplicatedContacts = new ArrayList<>();
+        if (cursor != null) {
+            int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID);
+            int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+            int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(idIndex);
+                String name = cursor.getString(nameIndex);
+                String number = cursor.getString(numberIndex);
+                duplicatedContacts.add(new Contact(id, name, number));
+            }
+            cursor.close();
+        }
+
+        return duplicatedContacts;
+    }
+
     public static Cursor getContactCursor(ContentResolver contactHelper, String startsWith) {
         String[] projection = { ContactsContract.CommonDataKinds.Phone._ID, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER };
         Cursor cur = null;
@@ -36,23 +95,6 @@ public class ContactHelper {
         return cur;
     }
 
-    public static Cursor getDuplicatedContactsByNameCursor(ContentResolver contentResolver, String startsWith) {
-        HashMap<String, List<String>> nameToIdsMap = collectIdsForNames(contentResolver, startsWith);
-        List<String> duplicateIds = filterDuplicateIds(nameToIdsMap);
-
-        if (duplicateIds.isEmpty()) {
-            return null; // No duplicates found
-        }
-
-        return queryDuplicatedContacts(contentResolver, duplicateIds);
-    }
-
-    public static Cursor getDuplicatedContactsByPhoneNumberCursor(ContentResolver contentResolver) {
-        HashMap<String, List<String>> numberToIdsMap = collectIdsForPhoneNumbers(contentResolver, null);
-        List<String> duplicateNumberIds = filterDuplicateIds(numberToIdsMap);
-
-        return queryDuplicatedContacts(contentResolver, duplicateNumberIds);
-    }
 
     private static HashMap<String, List<String>> collectIdsForNames(ContentResolver contentResolver, String startsWith) {
         HashMap<String, List<String>> nameToIdsMap = new HashMap<>();
@@ -88,23 +130,6 @@ public class ContactHelper {
         return duplicateIds;
     }
 
-    private static Cursor queryDuplicatedContacts(ContentResolver contentResolver, List<String> ids) {
-        String selection = ContactsContract.CommonDataKinds.Phone._ID + " IN (" +
-                TextUtils.join(",", Collections.nCopies(ids.size(), "?")) + ")";
-        String[] selectionArgs = ids.toArray(new String[0]);
-
-        return contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                new String[]{
-                        ContactsContract.CommonDataKinds.Phone._ID,
-                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                        ContactsContract.CommonDataKinds.Phone.NUMBER
-                },
-                selection,
-                selectionArgs,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
-        );
-    }
 
 
     private static HashMap<String, List<String>> collectIdsForPhoneNumbers(ContentResolver contentResolver, String startsWith) {
@@ -130,16 +155,6 @@ public class ContactHelper {
     }
 
 
-
-    public static void closeAllCursors(HashMap<String, List<Cursor>> duplicatedContacts) {
-        for (List<Cursor> cursors : duplicatedContacts.values()) {
-            for (Cursor cursor : cursors) {
-                if (cursor != null && !cursor.isClosed()) {
-                    cursor.close();
-                }
-            }
-        }
-    }
 
     public static void deleteContact(ContentResolver contentResolver, String number) {
         long contactId = getContactID(contentResolver, number);
