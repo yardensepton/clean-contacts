@@ -5,11 +5,10 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import java.io.Serializable;
 
 public class Contact  implements Parcelable {
 
-    private String id;
+    private long id;
     private String name;
     private String number;
 
@@ -17,14 +16,14 @@ public class Contact  implements Parcelable {
     public Contact() {
 
     }
-    public Contact(String id, String name, String number) {
+    public Contact(long id, String name, String number) {
         this.id = id;
         this.name = name;
         this.number = number;
     }
 
     protected Contact(Parcel in) {
-        id = in.readString();
+        id = in.readLong();
         name = in.readString();
         number = in.readString();
     }
@@ -41,11 +40,11 @@ public class Contact  implements Parcelable {
         }
     };
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -83,7 +82,7 @@ public class Contact  implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString(id);
+        dest.writeLong(id);
         dest.writeString(name);
         dest.writeString(number);
     }

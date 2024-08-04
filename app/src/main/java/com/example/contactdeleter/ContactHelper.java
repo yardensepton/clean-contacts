@@ -1,11 +1,9 @@
 package com.example.contactdeleter;
 
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
-import android.content.OperationApplicationException;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,7 +25,7 @@ public class ContactHelper {
             return new ArrayList<>(); // No duplicates found
         }
 
-        return queryDuplicatedContacts(contentResolver, duplicateIds);
+        return queryDuplicatedContacts(contentResolver, duplicateIds, Type.NAME.toString());
     }
 
     public static ArrayList<Contact> getDuplicatedContactsByPhoneNumber(ContentResolver contentResolver) {
@@ -38,34 +36,24 @@ public class ContactHelper {
             return new ArrayList<>(); // No duplicates found
         }
 
-        return queryDuplicatedContacts(contentResolver, duplicateNumberIds);
+        return queryDuplicatedContacts(contentResolver, duplicateNumberIds, Type.NUMBER.toString());
     }
 
-    private static ArrayList<Contact> queryDuplicatedContacts(ContentResolver contentResolver, List<String> ids) {
-        String selection = ContactsContract.CommonDataKinds.Phone._ID + " IN (" +
-                TextUtils.join(",", Collections.nCopies(ids.size(), "?")) + ")";
+    private static ArrayList<Contact> queryDuplicatedContacts(ContentResolver contentResolver, List<String> ids, String type) {
+        String selection = ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID + " IN (" + TextUtils.join(",", Collections.nCopies(ids.size(), "?")) + ")";
         String[] selectionArgs = ids.toArray(new String[0]);
 
-        Cursor cursor = contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                new String[]{
-                        ContactsContract.CommonDataKinds.Phone._ID,
-                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                        ContactsContract.CommonDataKinds.Phone.NUMBER
-                },
-                selection,
-                selectionArgs,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
-        );
+
+        Cursor cursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, new String[]{ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER}, selection, selectionArgs, Objects.equals(type, Type.NAME.toString()) ? ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME : ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
 
         ArrayList<Contact> duplicatedContacts = new ArrayList<>();
         if (cursor != null) {
-            int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID);
+            int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID);
             int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
             int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
 
             while (cursor.moveToNext()) {
-                String id = cursor.getString(idIndex);
+                long id = cursor.getLong(idIndex);
                 String name = cursor.getString(nameIndex);
                 String number = cursor.getString(numberIndex);
                 duplicatedContacts.add(new Contact(id, name, number));
@@ -77,23 +65,46 @@ public class ContactHelper {
     }
 
     public static Cursor getContactCursor(ContentResolver contactHelper, String startsWith) {
-        String[] projection = { ContactsContract.CommonDataKinds.Phone._ID, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER };
+        String[] projection = {ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID
+                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER};
         Cursor cur = null;
 
         try {
             if (startsWith != null && !startsWith.isEmpty()) {
-                cur = contactHelper.query (ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " like \"" + startsWith + "%\"", null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+                cur = contactHelper.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " like \"" + startsWith + "%\"", null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
             } else {
-                cur = contactHelper.query (ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+                cur = contactHelper.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
             }
             assert cur != null;
             cur.moveToFirst();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e("ContactHelper", String.valueOf(e));
         }
         return cur;
     }
+
+    public static int getDuplicatedCount(ContentResolver contentResolver, String type) {
+        ArrayList<Contact> duplicatedContacts = new ArrayList<>();
+        if ("name".equals(type)) {
+            duplicatedContacts = getDuplicatedContactsByName(contentResolver, null);
+        } else if ("phone".equals(type)) {
+            duplicatedContacts = getDuplicatedContactsByPhoneNumber(contentResolver);
+        }
+
+        return duplicatedContacts.size()/2;
+    }
+
+    public static ArrayList<Contact> getDuplicatedList(ContentResolver contentResolver, String type) {
+        ArrayList<Contact> duplicatedContacts = new ArrayList<>();
+        if ("name".equals(type)) {
+            duplicatedContacts = getDuplicatedContactsByName(contentResolver, null);
+        } else if ("phone".equals(type)) {
+            duplicatedContacts = getDuplicatedContactsByPhoneNumber(contentResolver);
+        }
+
+        return duplicatedContacts;
+    }
+
 
 
     private static HashMap<String, List<String>> collectIdsForNames(ContentResolver contentResolver, String startsWith) {
@@ -105,7 +116,7 @@ public class ContactHelper {
         }
 
         int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-        int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID);
+        int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID);
 
         while (cursor.moveToNext()) {
             String name = cursor.getString(nameIndex);
@@ -131,7 +142,6 @@ public class ContactHelper {
     }
 
 
-
     private static HashMap<String, List<String>> collectIdsForPhoneNumbers(ContentResolver contentResolver, String startsWith) {
         HashMap<String, List<String>> numberToIdsMap = new HashMap<>();
         Cursor cursor = getContactCursor(contentResolver, startsWith);
@@ -141,7 +151,7 @@ public class ContactHelper {
         }
 
         int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-        int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID);
+        int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID);
 
         while (cursor.moveToNext()) {
             String number = cursor.getString(numberIndex);
@@ -155,40 +165,17 @@ public class ContactHelper {
     }
 
 
+    public static void deleteContact(ContentResolver contentResolver, long contactId) {
 
-    public static void deleteContact(ContentResolver contentResolver, String number) {
-        long contactId = getContactID(contentResolver, number);
-        if (contactId != -1) {
-            ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-            ops.add(ContentProviderOperation.newDelete(ContactsContract.RawContacts.CONTENT_URI)
-                    .withSelection(ContactsContract.RawContacts.CONTACT_ID + "=?", new String[]{String.valueOf(contactId)})
-                    .build());
-            try {
-                contentResolver.applyBatch(ContactsContract.AUTHORITY, ops);
-            } catch (RemoteException | OperationApplicationException e) {
-                Log.e("ContactHelper", String.valueOf(e));
-            }
-        } else {
-            // Handle the case where the contact ID was not found
-            Log.e("ContactHelper", "Contact ID not found for number: " + number);
+        Uri rawContactUri = ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, contactId);
+
+        int rowsDeleted = contentResolver.delete(rawContactUri, null, null);
+
+        if (rowsDeleted > 0) {
+            Log.d("ContactHelper", "Contact deleted successfully");
+            contentResolver.notifyChange(ContactsContract.Contacts.CONTENT_URI, null);
+       } else {
+            Log.d("ContactHelper", "Contact not deleted ");
         }
     }
-
-    private static long getContactID(ContentResolver contentResolver, String number) {
-        Uri contactUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
-        String[] projection = { ContactsContract.PhoneLookup._ID };
-
-        try (Cursor cursor = contentResolver.query(contactUri, projection, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int personIDIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup._ID);
-                if (personIDIndex != -1) {
-                    return cursor.getLong(personIDIndex);
-                }
-            }
-        } catch (Exception e) {
-            Log.e("ContactHelper", String.valueOf(e));
-        }
-        return -1;
-    }
-
 }

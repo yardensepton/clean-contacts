@@ -9,7 +9,7 @@
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Contacts Duplications"
+        android:text="@string/contacts_duplications"
         android:textSize="24sp"
         android:textColor="@android:color/black"
         android:layout_centerHorizontal="true"
