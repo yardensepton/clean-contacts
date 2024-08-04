@@ -2,4 +2,8 @@
     <string name="app_name">ContactDeleter</string>
     <string name="delete_contact">Delete Contact</string>
     <string name="fetch_contacts">Fetch Contacts</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="request_contact_permission">Request Contact Permission</string>
+    <string name="request_contacts_permission">Request Contacts Permission</string>
 </resources>

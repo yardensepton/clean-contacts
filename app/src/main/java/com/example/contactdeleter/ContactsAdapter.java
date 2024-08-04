@@ -17,9 +17,9 @@ import androidx.annotation.Nullable;
 import java.util.List;
 
 public class ContactsAdapter extends ArrayAdapter<String> {
-    private Activity context;
-    private List<String> name;
-    private List<String> ph;
+    private final Activity context;
+    private final List<String> name;
+    private final List<String> ph;
     public ContactsAdapter(Activity context, List<String> names, List<String>ph) {
         super(context, R.layout.contact_ui, ph);
         this.context=context;
@@ -32,8 +32,8 @@ public class ContactsAdapter extends ArrayAdapter<String> {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
         @SuppressLint({"ViewHolder", "InflateParams"}) View rowView=inflater.inflate(R.layout.contact_ui, null,true);
-        TextView Textname = (TextView) rowView.findViewById(R.id.name);
-        TextView Textph =(TextView)  rowView.findViewById(R.id.ph);
+        TextView Textname = rowView.findViewById(R.id.name);
+        TextView Textph = rowView.findViewById(R.id.ph);
         Textname.setText(name.get(position));
         Textph.setText(ph.get(position));
         return rowView;

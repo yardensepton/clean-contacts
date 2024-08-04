@@ -4,7 +4,7 @@
     android:layout_height="match_parent">
 
     <ListView
-        android:id="@+id/listViewOptions"
+        android:id="@+id/listViewDuplications"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"/>

@@ -1,20 +1,24 @@
 package com.example.contactdeleter;
 
-import java.util.List;
+import androidx.annotation.NonNull;
 
-public class Contact {
+import java.io.Serializable;
+
+public class Contact  implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private String name;
-    private List<String> phoneNumbers;
+    private String number;
 
 
     public Contact() {
 
     }
-    public Contact(String id, String name, List<String> phoneNumbers) {
+    public Contact(String id, String name, String number) {
         this.id = id;
         this.name = name;
-        this.phoneNumbers = phoneNumbers;
+        this.number = number;
     }
 
     public String getId() {
@@ -33,21 +37,22 @@ public class Contact {
         this.name = name;
     }
 
-    public List<String> getPhoneNumbers() {
-        return phoneNumbers;
+    public String getNumber() {
+        return number;
     }
 
-    public void setPhoneNumbers(List<String> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
+    public void setNumber(String number) {
+        this.number = number;
     }
 
 
+    @NonNull
     @Override
     public String toString() {
         return "Contact{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", phoneNumbers=" + phoneNumbers +
+                ", number=" + number +
                 '}';
     }
 }
