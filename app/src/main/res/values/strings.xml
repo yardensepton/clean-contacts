@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ContactDeleter</string>
+    <string name="delete_contact">Delete Contact</string>
+    <string name="fetch_contacts">Fetch Contacts</string>
+</resources>
