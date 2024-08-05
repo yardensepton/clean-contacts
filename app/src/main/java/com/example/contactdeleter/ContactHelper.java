@@ -165,7 +165,7 @@ public class ContactHelper {
     }
 
 
-    public static void deleteContact(ContentResolver contentResolver, long contactId) {
+    public static boolean deleteContact(ContentResolver contentResolver, long contactId) {
 
         Uri rawContactUri = ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, contactId);
 
@@ -174,8 +174,10 @@ public class ContactHelper {
         if (rowsDeleted > 0) {
             Log.d("ContactHelper", "Contact deleted successfully");
             contentResolver.notifyChange(ContactsContract.Contacts.CONTENT_URI, null);
+            return true;
        } else {
             Log.d("ContactHelper", "Contact not deleted ");
+            return false;
         }
     }
 }

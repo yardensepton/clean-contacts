@@ -43,8 +43,12 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
         phoneTextView.setText(contact.getNumber());
 
         rowView.setOnLongClickListener(v -> {
-            Toast.makeText(context, "Deleting contact: " + contact.getName(), Toast.LENGTH_SHORT).show();
-            deleteContact(contentResolver,contact.getId());
+            boolean res = deleteContact(contentResolver,contact.getId());
+            if (res){
+                contacts.remove(contact);
+                notifyDataSetChanged(); // Notify the adapter to refresh the list view
+                Toast.makeText(context, "Contact deleted successfully", Toast.LENGTH_SHORT).show();
+            }
             return true;
         });
 

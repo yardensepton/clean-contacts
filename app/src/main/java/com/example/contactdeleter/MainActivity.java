@@ -2,6 +2,7 @@ package com.example.contactdeleter;
 
 import static com.example.contactdeleter.ContactHelper.getDuplicatedCount;
 import static com.example.contactdeleter.ContactHelper.getDuplicatedList;
+import android.os.Handler;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -9,6 +10,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Looper;
+import android.provider.ContactsContract;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private ContactsObserver contactsObserver;
 
     private static final int PERMISSIONS_REQUEST_CODE = 101;
     public static ContentResolver contentResolver;
@@ -36,12 +40,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
         contentResolver = getContentResolver();
 
         if (checkPermissions()) {
             setupListView();
         }
+        Runnable onContactsChanged = this::refreshContacts;
+        contactsObserver = new ContactsObserver( new Handler(Looper.getMainLooper()), onContactsChanged);
+        contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver);
+
+
     }
 
     private boolean checkPermissions() {
@@ -56,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    private void refreshContacts() {
+        // Reload contacts data and update the UI accordingly
+        setupListView();
+    }
+
 
     private void setupListView() {
         int namesDuplicationCount = getDuplicatedCount(contentResolver, "name");
@@ -106,5 +120,13 @@ public class MainActivity extends AppCompatActivity {
         dialog.setTitle("ERROR").setVibrate(true).setButtonVisibility(ButtonNames.OK, true).setButtonVisibility(ButtonNames.CANCEL, false)
                 .setMessage("In order to use this app you need to allow contacts permission!").setOKButtonText("OK")
                 .setTitleColor(Color.BLACK).setMsgColor(Color.BLACK).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (contactsObserver != null) {
+            contentResolver.unregisterContentObserver(contactsObserver);
+        }
     }
 }
