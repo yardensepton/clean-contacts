@@ -9,8 +9,8 @@ This app provides an interface to view, select, and remove unwanted contact entr
 
 ## Permissions
 The following permissions are required for the app to function properly:
-READ_CONTACTS: Allows the app to read the user's contacts. This permission is necessary for displaying and detecting duplicates in the contact list.
-WRITE_CONTACTS: Allows the app to modify the user's contacts. This permission is necessary for deleting selected contacts from the list.
+1. READ_CONTACTS: Allows the app to read the user's contacts. This permission is necessary for displaying and detecting duplicates in the contact list.
+2. WRITE_CONTACTS: Allows the app to modify the user's contacts. This permission is necessary for deleting selected contacts from the list.
 
 ## Usage
 View Contacts: Upon launching the app and accepting the necessary permissions, the number of duplicate contacts based on phone number and contact name will be displayed.
