@@ -3,9 +3,9 @@ CleanContacts is an Android application designed to help users manage their cont
 This app provides an interface to view, select, and remove unwanted contact entries from your device's contact list.
 
 ## Features
-Duplicates Detection: Identifies duplicate contacts based on criteria such as name and phone number.
-Delete Contacts: Allows users to delete contacts by long-clicking on them.
-Contacts Observer: Monitors changes in the contacts list and updates the app's data accordingly.
+1. Duplicates Detection: Identifies duplicate contacts based on criteria such as name and phone number.
+2. Delete Contacts: Allows users to delete contacts by long-clicking on them.
+3. Contacts Observer: Monitors changes in the contacts list and updates the app's data accordingly.
 
 ## Permissions
 The following permissions are required for the app to function properly:
