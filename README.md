@@ -18,6 +18,15 @@ By clicking on each criterion, the list of duplicate contacts will be shown.
 2. Delete Contact: Long-click on any contact in the list to delete it. A confirmation will be shown, and the contact will be removed.
 3. Monitor Changes: The app automatically updates the list of contacts whenever changes are made, thanks to the integrated ContactsObserver.
 
+Add permissions to your Manifest file:
+```
+<uses-spermission
+                android:name="android.permission.WRITE_CONTACTS" />
+
+<uses-permission
+            android:name="android.permission.READ_CONTACTS" />
+```
+
 ## Code Overview
 ### MainActivity
 Handles the main user interface and initializes the ContactsAdapter to display the list of contacts.
