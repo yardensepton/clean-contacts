@@ -13,10 +13,10 @@ The following permissions are required for the app to function properly:
 2. WRITE_CONTACTS: Allows the app to modify the user's contacts. This permission is necessary for deleting selected contacts from the list.
 
 ## Usage
-View Contacts: Upon launching the app and accepting the necessary permissions, the number of duplicate contacts based on phone number and contact name will be displayed.
+1. View Contacts: Upon launching the app and accepting the necessary permissions, the number of duplicate contacts based on phone number and contact name will be displayed.
 By clicking on each criterion, the list of duplicate contacts will be shown.
-Delete Contact: Long-click on any contact in the list to delete it. A confirmation will be shown, and the contact will be removed.
-Monitor Changes: The app automatically updates the list of contacts whenever changes are made, thanks to the integrated ContactsObserver.
+2. Delete Contact: Long-click on any contact in the list to delete it. A confirmation will be shown, and the contact will be removed.
+3. Monitor Changes: The app automatically updates the list of contacts whenever changes are made, thanks to the integrated ContactsObserver.
 
 ## Code Overview
 ### MainActivity
